@@ -101,9 +101,11 @@ namespace utf8util
                 }
 
             }
-            if( i>usedLen)//处理最后一批
+            cdet.DataEnd();
+
+            if ( i>usedLen)//处理最后一批
             {
-                switch (prevCS)
+                switch (cdet.Charset)
                 {
                     case Charsets.UTF16_LE:
                         theIdx = EncodingIndex.EI_UCS2_LE;
