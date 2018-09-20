@@ -1,0 +1,25 @@
+# ∏Ò Ω £∫ pattern attr1 attr2 ...
+# https://blog.csdn.net/taiyangdao/article/details/78484623
+# https://blog.csdn.net/github_30605157/article/details/56680990
+
+# The best way to avoid having to set core.autocrlf separately on each machine seems to be checking a .gitattributes 
+# file into the repository containing the single line
+# 
+# * -text
+# Or, if you have an older version of Git then
+# 
+# * -crlf
+# This tells Git that, for all paths (thus the *), end-of-line normalization should not be attempted. As far as I can tell, 
+# this should not have any other side-effects. In particular, it should not alter how diffs are generated (this has separate 
+# attribute diff/-diff) or how merges are handled (this has a separate attribute merge/-merge).
+# 
+# For more details, I suggest these resources:
+# 
+# The gitattributes documentation (git help attributes or an online copy) , which describes in detail both how end-of-line 
+# normalization works and the particular effects of different attributes. (Probably most relevant are text, crlf, diff, merge,
+#  and binary.)
+# Git mailing list thread Is the "text" attribute meant only to specify end-of-line normalization behavior, or does it have
+#  broader implications? (Mar 30, 2012), which expands on the meaning of different attributes, and clarifies that -text does
+#  not mean simply "this is a binary file".
+# 
+*               -text
