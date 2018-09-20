@@ -44,5 +44,11 @@
     <Compile Include="utf8fix.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Library\Ude.csproj">
+      <Project>{7becb850-389a-44fc-8523-3ef0b2540f07}</Project>
+      <Name>Ude</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
