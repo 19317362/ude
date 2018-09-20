@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ude.Tests", "src\Tests\Ude.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ude", "src\Library\Ude.csproj", "{7BECB850-389A-44FC-8523-3EF0B2540F07}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fixerr", "src\fixerr\fixerr.csproj", "{CE44990C-F010-42A9-AFAE-EC20FB13D31F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{7BECB850-389A-44FC-8523-3EF0B2540F07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BECB850-389A-44FC-8523-3EF0B2540F07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BECB850-389A-44FC-8523-3EF0B2540F07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
