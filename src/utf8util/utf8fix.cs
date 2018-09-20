@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
+using Ude;
 //https://unicodebook.readthedocs.io/unicode_encodings.html
 
 namespace utf8util
 {
     public enum EncodingIndex
     {
-        EI_GBK=0,
+        EI_GBK = 0,
         EI_UCS2_LE,
         EI_UCS2_BE,
         EI_UTF8,
@@ -27,9 +28,10 @@ namespace utf8util
         /// <param name="buf"></param>
         /// <returns></returns>
         public string FixBuffer(byte[] buf)
-        {
+        {//分片处理
+            Ude.CharsetDetector cdet = new Ude.CharsetDetector();
             var ecs = new Encoding[(int)EncodingIndex.EI_MAX];
-            int[] maxLen = new int[(int)EncodingIndex.EI_MAX] {2,2,2,3,1};//最大长度。 中文最大3个字节
+            int[] maxLen = new int[(int)EncodingIndex.EI_MAX] { 2, 2, 2, 3, 1 };//最大长度。 中文最大3个字节
 
             ecs[(int)EncodingIndex.EI_GBK] = Encoding.GetEncoding("GBK");
             ecs[(int)EncodingIndex.EI_UCS2_LE] = Encoding.Unicode;
@@ -38,88 +40,93 @@ namespace utf8util
             ecs[(int)EncodingIndex.EI_UTF8] = Encoding.BigEndianUnicode;
             ecs[(int)EncodingIndex.EI_ASCII] = Encoding.ASCII;
 
-            EncodingIndex bomIdx = EncodingIndex.EI_GBK;
-            int i;
-            i = (buf.Length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) ? 3 : 0;
-            if (i == 0)
-            {
-                if (buf.Length >= 2)
-                {
-                    if (buf[0] == 0xFF && buf[1] == 0xFE)//UCS2-LE
-                    {//应该主要是这种方式
-                        bomIdx = EncodingIndex.EI_UCS2_LE;
-                        i = 2;
-                    }
-                    else if (buf[0] == 0xFE && buf[1] == 0xFF)//UCS2-BE
-                    {
-                        bomIdx = EncodingIndex.EI_UCS2_BE;
-                        i = 2;
-                    }
+            EncodingIndex theIdx;
 
-                }
-
-            }
-            else
-            {//已经是UTF8-BOM
-                bomIdx = EncodingIndex.EI_UTF8;
-
-            }
-            int j;
-            int remainLen =0;
-            int defLen = maxLen[(int)bomIdx];
-            string strChar;
             var sb = new StringBuilder();
-            int usedLen =0;
-            for (; i < buf.Length; i+=usedLen)
+            int usedLen = 0;
+            string theSlice;
+            string prevCS = "";
+            float prevPricse = 0;
+            var theCache = new List<string>();
+            int i;
+            for ( i=0; i < buf.Length; ++i)
             {
-                remainLen = buf.Length - i;
-                if(remainLen >= defLen)
-                {
-                    try
-                    {
-                        
-                        strChar = ecs[(int)bomIdx].GetString(buf, i, defLen);
-                        sb.Append(strChar);
-                        usedLen = ecs[(int)bomIdx].GetByteCount(strChar);
-                        continue;//解析OK
-                    }
-                    catch(DecoderFallbackException ex)
-                    {
-                        Debug.WriteLine(ex);
-                        strChar ="";
-                    }
-                }
-                for (j = 0; j < ecs.Length; ++j)
-                {
-                    if(j != (int)bomIdx) //不等于的才处理
-                    {
-                        if(remainLen >= maxLen[j])
-                        {//够长
-                            try
-                            {
-                                strChar = ecs[(int)bomIdx].GetString(buf, i, defLen);
-                                sb.Append(strChar);
-                                usedLen = ecs[(int)bomIdx].GetByteCount(strChar);
-                                break;//解析OK
 
-                            }
-                            catch (DecoderFallbackException ex)
+                cdet.Feed(buf,i,1);
+                Debug.WriteLine($"IsDone {cdet.IsDone()} {cdet.Charset} {cdet.Confidence}");
+                if(! string.IsNullOrEmpty(cdet.Charset))
+                {
+                    if(prevCS != cdet.Charset)
+                    {
+                        if(string.IsNullOrEmpty(prevCS))
+                        {
+                            prevCS = cdet.Charset;
+                        }
+                        else
+                        {//发生了切换
+                            switch(prevCS)
                             {
-                                Debug.WriteLine(ex);
-                                strChar = "";
+                                case Charsets.UTF16_LE:
+                                    theIdx = EncodingIndex.EI_UCS2_LE;
+                                    break;
+                                case Charsets.UTF16_BE:
+                                    theIdx = EncodingIndex.EI_UCS2_BE;
+                                    break;
+
+                                case Charsets.UTF8:
+                                    theIdx = EncodingIndex.EI_UTF8;
+                                    break;
+                                case Charsets.GB18030:
+                                    theIdx = EncodingIndex.EI_GBK;
+                                    break;
+                                case Charsets.ASCII:
+                                    theIdx = EncodingIndex.EI_ASCII;
+                                    break;
+                                default:
+                                    throw new NotImplementedException();
                             }
+                            --i;//回退最后一个
+                            cdet.DataEnd();
+                            cdet.Reset();
+                            theSlice = ecs[(int)theIdx].GetString(buf,usedLen,i-usedLen);
+                            usedLen = i;//记录下来已用位置
+                            theCache.Add(theSlice);//增加进去
+                            sb.Append(theSlice);
                         }
                     }
+                    else
+                    {
+
+                    }
                 }
-                if(usedLen >0)
-                {//
-                    continue;
-                }
-                else
+
+            }
+            if( i>usedLen)//处理最后一批
+            {
+                switch (prevCS)
                 {
-                    usedLen =1;//跳过一个
-                    sb.Append($"0x{buf[i]:X2}");
+                    case Charsets.UTF16_LE:
+                        theIdx = EncodingIndex.EI_UCS2_LE;
+                        break;
+                    case Charsets.UTF16_BE:
+                        theIdx = EncodingIndex.EI_UCS2_BE;
+                        break;
+
+                    case Charsets.UTF8:
+                        theIdx = EncodingIndex.EI_UTF8;
+                        break;
+                    case Charsets.GB18030:
+                        theIdx = EncodingIndex.EI_GBK;
+                        break;
+                    case Charsets.ASCII:
+                        theIdx = EncodingIndex.EI_ASCII;
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
+                theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
+                theCache.Add(theSlice);//增加进去
+                sb.Append(theSlice);
             }
             return sb.ToString();
         }
