@@ -39,6 +39,8 @@ namespace fixerr
                     foreach(var line in oo)
                     {
 
+
+                        //
                         lo.Add(line);
                     }
                     System.IO.File.WriteAllLines(f, lo, Encoding.UTF8);

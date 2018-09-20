@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ude", "src\Library\Ude.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fixerr", "src\fixerr\fixerr.csproj", "{CE44990C-F010-42A9-AFAE-EC20FB13D31F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "utf8util", "src\utf8util\utf8util.csproj", "{F1C66848-9AC2-4F7E-BFB8-55D087F708AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "utf8util_test", "src\utf8util_test\utf8util_test.csproj", "{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +40,14 @@ Global
 		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE44990C-F010-42A9-AFAE-EC20FB13D31F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1C66848-9AC2-4F7E-BFB8-55D087F708AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1C66848-9AC2-4F7E-BFB8-55D087F708AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1C66848-9AC2-4F7E-BFB8-55D087F708AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1C66848-9AC2-4F7E-BFB8-55D087F708AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
