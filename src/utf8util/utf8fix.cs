@@ -20,8 +20,40 @@ namespace utf8util
         EI_ASCII,
         EI_MAX
     }
+    public enum InputState
+    {
+
+        NA,
+        ASCII,
+        MBCS
+    };
+
+    public static class ByteExt
+    {
+        public static bool IsASCII(this byte value)
+        {
+            // ASCII encoding replaces non-ascii with question marks, so we use UTF8 to see if multi-byte sequences are there
+            return (value & 0x80) == 0;
+        }
+    }
+
+
     public class utf8fix
     {
+
+        /// <summary>
+        /// Determines whether the argument string can be represented with the ASCII (<see cref="Encoding.ASCII"/>) encoding.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns>
+        /// <c>true</c> if the specified value is ASCII; otherwise, <c>false</c>.
+        /// </returns>
+        //public static bool IsASCII(this string value)
+        //{
+        //    // ASCII encoding replaces non-ascii with question marks, so we use UTF8 to see if multi-byte sequences are there
+        //    return Encoding.UTF8.GetByteCount(value) == value.Length;
+        //}
+
         /// <summary>
         /// 把输入buf中的 fix成 UTF8 串
         /// </summary>
@@ -29,105 +61,114 @@ namespace utf8util
         /// <returns></returns>
         public string FixBuffer(byte[] buf)
         {//分片处理
-            Ude.CharsetDetector cdet = new Ude.CharsetDetector();
-            var ecs = new Encoding[(int)EncodingIndex.EI_MAX];
+            var ecs = new Encoding[(int)EncodingIndex.EI_MAX]{
+
+                Encoding.GetEncoding("GBK"),
+                Encoding.Unicode,
+                Encoding.BigEndianUnicode,
+                Encoding.UTF8,
+                Encoding.ASCII
+                };
             int[] maxLen = new int[(int)EncodingIndex.EI_MAX] { 2, 2, 2, 3, 1 };//最大长度。 中文最大3个字节
 
-            ecs[(int)EncodingIndex.EI_GBK] = Encoding.GetEncoding("GBK");
-            ecs[(int)EncodingIndex.EI_UCS2_LE] = Encoding.Unicode;
-            ecs[(int)EncodingIndex.EI_UCS2_BE] = Encoding.BigEndianUnicode;
+            var cspMBCS = new Ude.Core.MBCSGroupProber();
 
-            ecs[(int)EncodingIndex.EI_UTF8] = Encoding.BigEndianUnicode;
-            ecs[(int)EncodingIndex.EI_ASCII] = Encoding.ASCII;
 
-            EncodingIndex theIdx;
+            EncodingIndex theIdx = EncodingIndex.EI_ASCII;
 
             var sb = new StringBuilder();
             int usedLen = 0;
             string theSlice;
-            string prevCS = "";
-            float prevPricse = 0;
-            var theCache = new List<string>();
+            var theSlices = new List<string>();//记录下每个分片
             int i;
-            for ( i=0; i < buf.Length; ++i)
+            InputState inputState = InputState.NA;
+
+            EncodingIndex bomIdx = EncodingIndex.EI_GBK;
+            i = (buf.Length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) ? 3 : 0;
+            if (i == 0)
             {
-
-                cdet.Feed(buf,i,1);
-                Debug.WriteLine($"IsDone {cdet.IsDone()} {cdet.Charset} {cdet.Confidence}");
-                if(! string.IsNullOrEmpty(cdet.Charset))
+                if (buf.Length >= 2)
                 {
-                    if(prevCS != cdet.Charset)
-                    {
-                        if(string.IsNullOrEmpty(prevCS))
-                        {
-                            prevCS = cdet.Charset;
-                        }
-                        else
-                        {//发生了切换
-                            switch(prevCS)
-                            {
-                                case Charsets.UTF16_LE:
-                                    theIdx = EncodingIndex.EI_UCS2_LE;
-                                    break;
-                                case Charsets.UTF16_BE:
-                                    theIdx = EncodingIndex.EI_UCS2_BE;
-                                    break;
-
-                                case Charsets.UTF8:
-                                    theIdx = EncodingIndex.EI_UTF8;
-                                    break;
-                                case Charsets.GB18030:
-                                    theIdx = EncodingIndex.EI_GBK;
-                                    break;
-                                case Charsets.ASCII:
-                                    theIdx = EncodingIndex.EI_ASCII;
-                                    break;
-                                default:
-                                    throw new NotImplementedException();
-                            }
-                            --i;//回退最后一个
-                            cdet.DataEnd();
-                            cdet.Reset();
-                            theSlice = ecs[(int)theIdx].GetString(buf,usedLen,i-usedLen);
-                            usedLen = i;//记录下来已用位置
-                            theCache.Add(theSlice);//增加进去
-                            sb.Append(theSlice);
-                        }
+                    if (buf[0] == 0xFF && buf[1] == 0xFE)//UCS2-LE
+                    {//应该主要是这种方式
+                        bomIdx = EncodingIndex.EI_UCS2_LE;
+                        i = 2;
                     }
-                    else
+                    else if (buf[0] == 0xFE && buf[1] == 0xFF)//UCS2-BE
                     {
-
+                        bomIdx = EncodingIndex.EI_UCS2_BE;
+                        i = 2;
                     }
+
                 }
 
             }
-            cdet.DataEnd();
+            else
+            {//已经是UTF8-BOM
+                bomIdx = EncodingIndex.EI_UTF8;
 
-            if ( i>usedLen)//处理最后一批
+            }
+            //按状态机来做
+
+            for (; i < buf.Length; ++i)
             {
-                switch (cdet.Charset)
-                {
-                    case Charsets.UTF16_LE:
-                        theIdx = EncodingIndex.EI_UCS2_LE;
-                        break;
-                    case Charsets.UTF16_BE:
-                        theIdx = EncodingIndex.EI_UCS2_BE;
-                        break;
 
-                    case Charsets.UTF8:
-                        theIdx = EncodingIndex.EI_UTF8;
-                        break;
-                    case Charsets.GB18030:
+                Debug.WriteLine($"{i} {buf[i]:X2}");
+
+                // other than 0xa0, if every other character is ascii, the page is ascii
+                if (!buf[i].IsASCII())
+                {
+                    if (inputState == InputState.NA)
+                    {
+                        inputState = InputState.MBCS;
+                        //片段起始
                         theIdx = EncodingIndex.EI_GBK;
-                        break;
-                    case Charsets.ASCII:
-                        theIdx = EncodingIndex.EI_ASCII;
-                        break;
-                    default:
-                        throw new NotImplementedException();
+
+                    }
+                    else if (inputState != InputState.MBCS)
+                    {
+
+                        theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
+                        usedLen = i;//记录下来已用位置
+                        theSlices.Add(theSlice);//增加进去
+                        sb.Append(theSlice);
+
+                        //一个片段OK
+                        inputState = InputState.MBCS;
+                    }
+
                 }
+                else
+                {
+                    if(inputState == InputState.NA)
+                    {
+                        inputState = InputState.ASCII;
+                        theIdx = EncodingIndex.EI_ASCII;
+                    }
+                    else if(inputState != InputState.ASCII)
+                    {
+                        //一个片段OK
+                        //非ASCII 这儿要分析编码类型
+                        theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
+                        usedLen = i;//记录下来已用位置
+                        theSlices.Add(theSlice);//增加进去
+                        sb.Append(theSlice);
+
+                        // 状态机
+
+                        inputState = InputState.ASCII;
+                        theIdx = EncodingIndex.EI_ASCII;
+                    }
+                    
+
+                }
+
+            }
+
+            if (i > usedLen)//处理最后一批
+            {
                 theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
-                theCache.Add(theSlice);//增加进去
+                theSlices.Add(theSlice);//增加进去
                 sb.Append(theSlice);
             }
             return sb.ToString();
