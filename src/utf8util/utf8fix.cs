@@ -109,127 +109,40 @@ namespace utf8util
 
             }
             //按状态机来做
-
-            for (; i < buf.Length; ++i)
+            InputState newState = InputState.NA;
+            Ude.Core.ProbingState curProbSt = Ude.Core.ProbingState.Detecting;
+            for (; i < buf.Length; )
             {
+                int remain = buf.Length - i;
+                int validLen =0;
+                var valid = IsValidUtf8(buf,i,remain,ref validLen);
 
-                Debug.WriteLine($"{i} {buf[i]:X2}");
-
-                // other than 0xa0, if every other character is ascii, the page is ascii
-                if (!buf[i].IsASCII())
+                Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} new:{validLen}");
+                if(valid)
                 {
-                    if (inputState == InputState.NA)
-                    {
-                        inputState = InputState.MBCS;
-                        //片段起始
-                        theIdx = EncodingIndex.EI_GBK;
-
-                    }
-                    else if (inputState != InputState.MBCS)
-                    {
-
-                        theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
-                        usedLen = i;//记录下来已用位置
-                        theSlices.Add(theSlice);//增加进去
-                        sb.Append(theSlice);
-
-                        //一个片段OK
-                        inputState = InputState.MBCS;
-                    }
-
+                    i+=validLen;
                 }
                 else
                 {
-                    if(inputState == InputState.NA)
-                    {
-                        inputState = InputState.ASCII;
-                        theIdx = EncodingIndex.EI_ASCII;
-                    }
-                    else if(inputState != InputState.ASCII)
-                    {
-                        //一个片段OK
-                        //非ASCII 这儿要分析编码类型
-                        theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
-                        usedLen = i;//记录下来已用位置
-                        theSlices.Add(theSlice);//增加进去
-                        sb.Append(theSlice);
-
-                        // 状态机
-
-                        inputState = InputState.ASCII;
-                        theIdx = EncodingIndex.EI_ASCII;
-                    }
                     
-
+                    ++i;
                 }
 
+                // other than 0xa0, if every other character is ascii, the page is ascii
+      
+                
+
             }
 
-            if (i > usedLen)//处理最后一批
-            {
-                theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
-                theSlices.Add(theSlice);//增加进去
-                sb.Append(theSlice);
-            }
+//             if (i > usedLen)//处理最后一批
+//             {
+//                 theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
+//                 theSlices.Add(theSlice);//增加进去
+//                 sb.Append(theSlice);
+//             }
             return sb.ToString();
         }
 
-
-
-        public bool Check(string fileName)
-        {
-            using (BufferedStream fstream = new BufferedStream(File.OpenRead(fileName)))
-            {
-                return this.IsUtf8(fstream);
-            }
-        }
-
-        /// <summary>
-        /// Check if stream is utf8 encoded.
-        /// Notice: stream is read completely in memory!
-        /// </summary>
-        /// <param name="stream">Stream to read from.</param>
-        /// <returns>True if the whole stream is utf8 encoded.</returns>
-        public bool IsUtf8(Stream stream)
-        {
-            int count = 4 * 1024;
-            byte[] buffer;
-            int read;
-            while (true)
-            {
-                buffer = new byte[count];
-                stream.Seek(0, SeekOrigin.Begin);
-                read = stream.Read(buffer, 0, count);
-                if (read < count)
-                {
-                    break;
-                }
-                buffer = null;
-                count *= 2;
-            }
-            return IsUtf8(buffer, read);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        public static bool IsUtf8(byte[] buffer, int length)
-        {
-            int position = 0;
-            int bytes = 0;
-            while (position < length)
-            {
-                if (!IsValid(buffer, position, length, ref bytes))
-                {
-                    return false;
-                }
-                position += bytes;
-            }
-            return true;
-        }
 
         /// <summary>
         /// 
@@ -239,17 +152,17 @@ namespace utf8util
         /// <param name="length"></param>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static bool IsValid(byte[] buffer, int position, int length, ref int bytes)
+        public static bool IsValidUtf8(byte[] buffer, int position, int length, ref int bytes)
         {
-            if (length > buffer.Length)
+            if (position + length > buffer.Length)
             {
                 throw new ArgumentException("Invalid length");
             }
 
-            if (position > length - 1)
+            if (length < 1)
             {
                 bytes = 0;
-                return true;
+                return false;
             }
 
             byte ch = buffer[position];
@@ -262,7 +175,7 @@ namespace utf8util
 
             if (ch >= 0xc2 && ch <= 0xdf)
             {
-                if (position >= length - 2)
+                if (length<2)
                 {
                     bytes = 0;
                     return false;
@@ -278,7 +191,7 @@ namespace utf8util
 
             if (ch == 0xe0)
             {
-                if (position >= length - 3)
+                if (length < 3)
                 {
                     bytes = 0;
                     return false;
@@ -297,7 +210,7 @@ namespace utf8util
 
             if (ch >= 0xe1 && ch <= 0xef)
             {
-                if (position >= length - 3)
+                if ( length < 3)
                 {
                     bytes = 0;
                     return false;
@@ -316,7 +229,7 @@ namespace utf8util
 
             if (ch == 0xf0)
             {
-                if (position >= length - 4)
+                if (length < 4)
                 {
                     bytes = 0;
                     return false;
@@ -336,7 +249,7 @@ namespace utf8util
 
             if (ch == 0xf4)
             {
-                if (position >= length - 4)
+                if ( length < 4)
                 {
                     bytes = 0;
                     return false;
@@ -356,7 +269,7 @@ namespace utf8util
 
             if (ch >= 0xf1 && ch <= 0xf3)
             {
-                if (position >= length - 4)
+                if ( length < 4)
                 {
                     bytes = 0;
                     return false;
@@ -375,6 +288,60 @@ namespace utf8util
             }
 
             return false;
+        }
+
+
+        /// <summary>
+        /// https://en.wikipedia.org/wiki/GBK_(character_encoding)
+        /// 判断 GBK
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="position"></param>
+        /// <param name="length"></param>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static bool IsValidGbk(byte[] buffer, int position, int length, ref int bytes)
+        {
+            bool valid = false;
+            bytes = 0;
+
+            if (position + length > buffer.Length || length<1)
+            {
+                
+            }
+            else
+            {
+                if (length == 1)
+                {
+                    valid = (buffer[0] & 0x80) == 0;
+                    if (valid)
+                    {
+                        bytes = 1;
+                    }
+                }
+                else // length >=2
+                {
+                    byte ch0 = buffer[position];
+                    byte ch1 = buffer[position + 1];
+
+                    if (((ch0 >= 0xA1 && ch0 <= 0xA9) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/1
+                        || ((ch0 >= 0xB0 && ch0 <= 0xF7) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/2
+                        || ((ch0 >= 0x81 && ch0 <= 0xA0) && (ch1 >= 0x40 && ch1 <= 0xFE && ch1 != 0x7F)) // BGK/3
+                        || ((ch0 >= 0xAA && ch0 <= 0xFE) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/4
+                        || ((ch0 >= 0xA8 && ch0 <= 0xA9) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/5
+                                                                                                         //|| ((ch0 >= 0xAA && ch0 <= 0xAF) && (ch1 >= 0xA1 && ch1 <= 0xF && ch1 != 0x7F)) // BGK/4
+                        )
+                    {
+                        valid = true;
+                        bytes = 2;
+
+                    }
+                }
+
+            }
+
+
+            return valid;
         }
 
     }
