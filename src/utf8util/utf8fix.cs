@@ -368,12 +368,8 @@ namespace utf8util
                     byte ch0 = buffer[position];
                     byte ch1 = buffer[position + 1];
 
-                    if (((ch0 >= 0xA1 && ch0 <= 0xA9) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/1
-                        || ((ch0 >= 0xB0 && ch0 <= 0xF7) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/2
-                        || ((ch0 >= 0x81 && ch0 <= 0xA0) && (ch1 >= 0x40 && ch1 <= 0xFE && ch1 != 0x7F)) // BGK/3
-                        || ((ch0 >= 0xAA && ch0 <= 0xFE) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/4
-                        || ((ch0 >= 0xA8 && ch0 <= 0xA9) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/5
-                                                                                                         //|| ((ch0 >= 0xAA && ch0 <= 0xAF) && (ch1 >= 0xA1 && ch1 <= 0xF && ch1 != 0x7F)) // BGK/4
+                    if (
+                        ((ch0 >= 0x81 && ch0 <= 0xFE) && (ch1 >= 0x40 && ch1 <= 0xFE && ch1 != 0x7F))
                         )
                     {
                         valid = true;
