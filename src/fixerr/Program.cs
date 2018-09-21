@@ -27,6 +27,9 @@ namespace fixerr
                 //Console.WriteLine("UCS2:\r\n{0}", BitConverter.ToString(ucs2));
                 var ff = System.IO.Directory.EnumerateFiles(args[0], args[1], SearchOption.AllDirectories).ToArray();
                 Console.WriteLine($"Total Files: {ff.Length}");
+                var fix = new utf8util.utf8fix();
+                int ln =0;
+                var gbkEcs = Encoding.GetEncoding("GBK"));
                 foreach (var f in ff)
                 {
                     //UTF8的部分 这个可以修回来
@@ -34,14 +37,23 @@ namespace fixerr
                     //或者 python 按行转为UTF8
                     //这个纠 UTF8的
                     var lo = new List<string>();
-                    var oo = System.IO.File.ReadAllLines(f, Encoding.GetEncoding("GBK"));
+                    ln =0;
+                    var oo = System.IO.File.ReadAllLines(f);//, Encoding.GetEncoding("GBK"));
                     //按行来做处理
                     foreach(var line in oo)
                     {
+                        var utf8 = Encoding.UTF8.GetBytes(line);
+                        var gbk = gbkEcs.GetBytes(line);
+                        ++ln;
+                        if(ln == 330)
+                        {
+                            Console.WriteLine($"{ln}");
+                        }
 
-
+                        var fixedLen = fix.FixBuffer(utf8);
                         //
-                        lo.Add(line);
+                        
+                        lo.Add(fixedLen);
                     }
                     System.IO.File.WriteAllLines(f, lo, Encoding.UTF8);
                 }

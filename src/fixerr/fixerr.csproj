@@ -54,6 +54,10 @@
       <Project>{7becb850-389a-44fc-8523-3ef0b2540f07}</Project>
       <Name>Ude</Name>
     </ProjectReference>
+    <ProjectReference Include="..\utf8util\utf8util.csproj">
+      <Project>{f1c66848-9ac2-4f7e-bfb8-55d087f708ac}</Project>
+      <Name>utf8util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
