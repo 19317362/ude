@@ -113,6 +113,19 @@ namespace utf8util
 
             for (; i < len;)
             {
+                if (dataBuf[offset + i] == 0x0d || dataBuf[offset + i] == 0x0a)
+                {
+                    if (bomIdx == EncodingIndex.EI_MAX)
+                    {
+                        ++i;
+                        usedLen = i;
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
                 remain = len - i;
                 
                 

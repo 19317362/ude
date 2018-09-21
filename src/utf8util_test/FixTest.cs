@@ -93,6 +93,23 @@ UCS2:
 
             Assert.AreEqual(text, "//printf(\"1: 正在解析下载地址...\");");
 
+
+            var data2 = new byte[]
+            {
+                0x2F, 0x2F, 0xC1, 0xAC, 0xBD, 0xD3, 0xD4, 0xB6, 0xB3, 0xCC, 0xD6, 0xF7, 0xBB, 0xFA,
+/*
+ UTF8:
+2F-2F-E8-BF-9E-E6-8E-A5-E8-BF-9C-E7-A8-8B-E4-B8-BB-E6-9C-BA
+GBK:
+2F-2F-C1-AC-BD-D3-D4-B6-B3-CC-D6-F7-BB-FA
+UCS2:
+2F-00-2F-00-DE-8F-A5-63-DC-8F-0B-7A-3B-4E-3A-67
+                 */
+            };
+
+            text = fix.FixBuffer(data2);
+
+            Assert.AreEqual(text, "//连接远程主机");
         }
 
     }

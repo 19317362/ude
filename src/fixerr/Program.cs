@@ -31,6 +31,7 @@ namespace fixerr
                 int ln =0;
                 int donePos=0;
                 int i;
+                
                 var gbkEcs = Encoding.GetEncoding("GBK");
                 foreach (var f in ff)
                 {
@@ -58,12 +59,12 @@ namespace fixerr
                             {
 
                                 ++ln;
-                                if (ln == 330)
+                                //if (ln == 330)
                                 {
                                     Console.WriteLine($"{ln}");
                                 }
 
-                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos -1).TrimEnd();
+                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos);//.TrimEnd();
                                 //
 
                                 lo.Add(fixedLen);
