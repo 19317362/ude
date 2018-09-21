@@ -92,15 +92,18 @@ namespace fixerr
                             {
 
                                 ++ln;
-                                if (ln == 330)
-                                {
-                                    Console.WriteLine($"{ln}");
-                                }
 
                                 var fixedLn = fix.FixBuffer(oo,bomIdx,donePos,i - donePos);
                                                                                      
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
-                                if(fix.HasInvalidChar(dataK))
+                                if (ln == 347)
+                                {
+                                    Console.WriteLine($"{ln} OFFSET:{donePos}");
+                                    Console.WriteLine("ORG:" + BitConverter.ToString(oo,donePos,i-donePos));
+                                    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
+                                }
+                                
+                                if (fix.HasInvalidChar(dataK))
                                 {
                                     
                                     EncodingIndex alterDcs;
@@ -114,6 +117,7 @@ namespace fixerr
                                     }
                                     fixedLn = fix.FixBuffer(oo, alterDcs, donePos, i - donePos);
                                     dataK = Encoding.UTF8.GetBytes(fixedLn);
+                                    Console.WriteLine("AFT2:" + BitConverter.ToString(dataK));
                                     if (fix.HasInvalidChar(dataK))
                                     {
                                         Console.WriteLine($"ERROR_5 {ln} {alterDcs} INVALID {f}");
