@@ -80,7 +80,7 @@ namespace fixerr
                         bomIdx = EncodingIndex.EI_UTF8;
 
                     }
-                    bomIdx = EncodingIndex.EI_MAX;
+                    
 
                     //按行来做处理
                     //foreach(var line in oo)
@@ -97,12 +97,27 @@ namespace fixerr
                                     Console.WriteLine($"{ln}");
                                 }
 
-                                var fixedLn = fix.FixBuffer(oo,EncodingIndex.EI_UTF8,donePos,i - donePos);//.TrimEnd();
-                                                                                     //
+                                var fixedLn = fix.FixBuffer(oo,bomIdx,donePos,i - donePos);
+                                                                                     
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
                                 if(fix.HasInvalidChar(dataK))
                                 {
-                                    Console.WriteLine($"ERROR_4 {ln} INVALID {f}");
+                                    Console.WriteLine($"ERROR_4 {ln} {bomIdx} INVALID {f}");
+                                    EncodingIndex alterDcs;
+                                    if(bomIdx == EncodingIndex.EI_UTF8)
+                                    {
+                                        alterDcs =EncodingIndex.EI_GBK;
+                                    }
+                                    else
+                                    {
+                                        alterDcs =EncodingIndex.EI_UTF8;
+                                    }
+                                    fixedLn = fix.FixBuffer(oo, alterDcs, donePos, i - donePos);
+                                    dataK = Encoding.UTF8.GetBytes(fixedLn);
+                                    if (fix.HasInvalidChar(dataK))
+                                    {
+                                        Console.WriteLine($"ERROR_5 {ln} {bomIdx} INVALID {f}");
+                                    }
                                 }
                                 lo.Add(fixedLn);
                                 donePos = i;

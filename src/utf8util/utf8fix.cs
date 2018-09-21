@@ -86,6 +86,11 @@ namespace utf8util
             {
                 len = dataBuf.Length - offset;
             }
+            if(fisrtECS >= EncodingIndex.EI_MAX)
+            {
+                fisrtECS = EncodingIndex.EI_GBK;
+            
+            }
             int[] maxLen = new int[(int)EncodingIndex.EI_MAX] { 2, 2, 2, 3, 1 };//最大长度。 中文最大3个字节
 
             var cspMBCS = new Ude.Core.MBCSGroupProber();
