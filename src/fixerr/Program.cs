@@ -41,14 +41,20 @@ namespace fixerr
                     var lo = new List<string>();
                     ln =0;
                     var oo = System.IO.File.ReadAllBytes(f);//, Encoding.GetEncoding("GBK"));
-                   
+                    //判断有无 0x00 UCS2 ...
+                    var haveUcs2 = oo.Any(L => L == 0x00);
+                    Console.WriteLine($"UCS2?{haveUcs2} {f}");
+                    if(haveUcs2)
+                    {
+                        continue;
+                    }
                     //按行来做处理
                     //foreach(var line in oo)
                     for(i=0,donePos =0; i< oo.Length;++i )
                     {
-                        if(oo[i] == 0x0a)
+                        if(oo[i] == 0x0a || oo[i] == 0x0d)
                         {//新的一行到了
-                            if(i> donePos)
+                            if((i-1)> donePos)
                             {
 
                                 ++ln;
@@ -57,12 +63,16 @@ namespace fixerr
                                     Console.WriteLine($"{ln}");
                                 }
 
-                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos);
+                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos -1).TrimEnd();
                                 //
 
                                 lo.Add(fixedLen);
                                 donePos = i;
 
+                            }
+                            else
+                            {
+                                donePos =i;
                             }
                         }
 

@@ -129,7 +129,7 @@ namespace utf8util
                     else
                     {
                         valid = IsValidGb18030(dataBuf,offset + i, remain, ref validLen);
-                        Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {
                             i += validLen;
@@ -150,7 +150,7 @@ namespace utf8util
                     {
                         valid = IsValidUtf8(dataBuf,offset + i, remain, ref validLen);
 
-                        Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {//继续
                             i += validLen;
@@ -170,7 +170,7 @@ namespace utf8util
                     {
                         valid = IsValidGb18030(dataBuf,offset + i, remain, ref validLen);
 
-                        Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {//继续
                             i += validLen;
