@@ -110,6 +110,7 @@ namespace utf8util
             {
                 remain = buf.Length - i;
                 
+                
                 if(bomIdx == EncodingIndex.EI_MAX)
                 {
                     valid = IsValidUtf8(buf, i, remain, ref validLen);

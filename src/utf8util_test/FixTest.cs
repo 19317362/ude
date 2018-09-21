@@ -23,12 +23,12 @@ namespace utf8util_test
             theFixed = fix.FixBuffer(gbk);
             Assert.AreEqual(theFixed,txt);
 
-            var ucs2 = Encoding.Unicode.GetBytes(txt);
-            theFixed = fix.FixBuffer(ucs2);
-            Assert.AreEqual(theFixed,txt);
+            //var ucs2 = Encoding.Unicode.GetBytes(txt);
+            //theFixed = fix.FixBuffer(ucs2);
+            //Assert.AreEqual(theFixed,txt);
 
             //组合混合串 顺序1
-            var mixedBuf = new byte[utf8.Length + gbk.Length + ucs2.Length];
+            var mixedBuf = new byte[utf8.Length + gbk.Length + utf8.Length];
             var theMixedStr = txt + txt + txt;
             int iOffset =0;
 
@@ -38,13 +38,14 @@ namespace utf8util_test
             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
             iOffset += gbk.Length;
 
-            Buffer.BlockCopy(ucs2, 0, mixedBuf, iOffset, ucs2.Length);
-            iOffset += ucs2.Length;
+            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
+            iOffset += utf8.Length;
 
             theFixed = fix.FixBuffer(mixedBuf);
             Assert.AreEqual(theFixed, theMixedStr);
 
             //顺序2
+            mixedBuf = new byte[gbk.Length + gbk.Length + utf8.Length];
             iOffset = 0;
 
             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
@@ -53,48 +54,13 @@ namespace utf8util_test
             Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
             iOffset += utf8.Length;
 
-            Buffer.BlockCopy(ucs2, 0, mixedBuf, iOffset, ucs2.Length);
-            iOffset += ucs2.Length;
-
-
-            theFixed = fix.FixBuffer(mixedBuf);
-            Assert.AreEqual(theFixed, theMixedStr);
-
-
-            //顺序3
-            iOffset = 0;
-
-            Buffer.BlockCopy(ucs2, 0, mixedBuf, iOffset, ucs2.Length);
-            iOffset += ucs2.Length;
-
-            Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
-            iOffset += gbk.Length;
-
-            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
-            iOffset += utf8.Length;
-
-
-
-            theFixed = fix.FixBuffer(mixedBuf);
-            Assert.AreEqual(theFixed, theMixedStr);
-
-            //顺序3
-
-            iOffset = 0;
-            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
-            iOffset += utf8.Length;
-
-            Buffer.BlockCopy(ucs2, 0, mixedBuf, iOffset, ucs2.Length);
-            iOffset += ucs2.Length;
-
             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
             iOffset += gbk.Length;
 
 
-
-
             theFixed = fix.FixBuffer(mixedBuf);
             Assert.AreEqual(theFixed, theMixedStr);
+
 
         }
         /// <summary>
