@@ -100,15 +100,20 @@ UCS2:
 /*
  UTF8:
 2F-2F-E8-BF-9E-E6-8E-A5-E8-BF-9C-E7-A8-8B-E4-B8-BB-E6-9C-BA
+      EF BF BD  -- UTF8 的非法字数据  
 GBK:
 2F-2F-C1-AC-BD-D3-D4-B6-B3-CC-D6-F7-BB-FA
 UCS2:
 2F-00-2F-00-DE-8F-A5-63-DC-8F-0B-7A-3B-4E-3A-67
+
+
                  */
             };
 
             text = fix.FixBuffer(data2);
-
+            var dataK = Encoding.UTF8.GetBytes(text);
+            Assert.IsFalse(fix.HasInvalidChar(dataK));
+            //if(dataK.)
             Assert.AreEqual(text, "//连接远程主机");
         }
 

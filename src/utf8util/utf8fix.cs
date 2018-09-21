@@ -47,7 +47,26 @@ namespace utf8util
         //    // ASCII encoding replaces non-ascii with question marks, so we use UTF8 to see if multi-byte sequences are there
         //    return Encoding.UTF8.GetByteCount(value) == value.Length;
         //}
+        public bool HasInvalidChar(byte[] buf)
+        {
+            //ERR    EF BF BD
+            //BOM:EF BB BF                                        
 
+            int i;
+            bool ret = false;
+            for(i=0;i<buf.Length -3;++i)
+            {
+                if(buf[i]== 0xEF
+                    &&buf[i]== 0xBF
+                    &&buf[i]== 0xBD
+                    )
+                {
+                    ret = true;
+                    break;
+                }
+            }
+            return ret;
+        }
         /// <summary>
         /// 把输入buf中的 fix成 UTF8 串
         /// </summary>
