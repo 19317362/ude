@@ -96,35 +96,10 @@ namespace utf8util
             int usedLen = 0;
             string theSlice;
             var theSlices = new List<string>();//记录下每个分片
-            int i;
+            int i=0;
 
-            EncodingIndex bomIdx = EncodingIndex.EI_GBK;
+            EncodingIndex bomIdx = EncodingIndex.EI_MAX;
             
-            i = (len >= 3 && dataBuf[offset] == 0xEF && dataBuf[offset+1] == 0xBB && dataBuf[offset + 2] == 0xBF) ? 3 : 0;
-            if (i == 0)
-            {
-                if (len >= 2)
-                {
-                    if (dataBuf[offset + 0] == 0xFF && dataBuf[offset + 1] == 0xFE)//UCS2-LE
-                    {//应该主要是这种方式
-                        bomIdx = EncodingIndex.EI_UCS2_LE;
-                        i = 2;
-                    }
-                    else if (dataBuf[offset + 0] == 0xFE && dataBuf[offset + 1] == 0xFF)//UCS2-BE
-                    {
-                        bomIdx = EncodingIndex.EI_UCS2_BE;
-                        i = 2;
-                    }
-
-                }
-
-            }
-            else
-            {//已经是UTF8-BOM
-                bomIdx = EncodingIndex.EI_UTF8;
-
-            }
-            bomIdx = EncodingIndex.EI_MAX;
             //按状态机来做
             int remain ;
             int validLen = 0 ;

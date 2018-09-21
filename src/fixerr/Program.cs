@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using utf8util;
 
 namespace fixerr
 {
@@ -44,14 +45,46 @@ namespace fixerr
                     var oo = System.IO.File.ReadAllBytes(f);//, Encoding.GetEncoding("GBK"));
                     //判断有无 0x00 UCS2 ...
                     var haveUcs2 = oo.Any(L => L == 0x00);
-                    Console.WriteLine($"UCS2?{haveUcs2} {f}");
                     if(haveUcs2)
                     {
+                        Console.WriteLine($"ERROR_1 UCS2 {haveUcs2} {f}");
                         continue;
                     }
+                    EncodingIndex bomIdx = EncodingIndex.EI_MAX;
+                    i = (oo.Length >= 3 && oo[0] == 0xEF && oo[0 + 1] == 0xBB && oo[0 + 2] == 0xBF) ? 3 : 0;
+                    if (i == 0)
+                    {
+                        if (oo.Length >= 2)
+                        {
+                            if (oo[0 + 0] == 0xFF && oo[0 + 1] == 0xFE)//UCS2-LE
+                            {//应该主要是这种方式
+                                
+                                i = 2;
+                                bomIdx = EncodingIndex.EI_UCS2_LE;
+                                Console.WriteLine($"ERROR_2{bomIdx} {f}");
+                                continue;
+                            }
+                            else if (oo[0 + 0] == 0xFE && oo[0 + 1] == 0xFF)//UCS2-BE
+                            {
+                                bomIdx = EncodingIndex.EI_UCS2_BE;
+                                i = 2;
+                                Console.WriteLine($"ERROR_3 {bomIdx} {f}");
+                                continue;
+                            }
+
+                        }
+
+                    }
+                    else
+                    {//已经是UTF8-BOM
+                        bomIdx = EncodingIndex.EI_UTF8;
+
+                    }
+                    bomIdx = EncodingIndex.EI_MAX;
+
                     //按行来做处理
                     //foreach(var line in oo)
-                    for(i=0,donePos =0; i< oo.Length;++i )
+                    for (donePos =i; i< oo.Length;++i )
                     {
                         if(oo[i] == 0x0a || oo[i] == 0x0d)
                         {//新的一行到了
@@ -69,7 +102,7 @@ namespace fixerr
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
                                 if(fix.HasInvalidChar(dataK))
                                 {
-                                    Console.WriteLine($"{ln} INVALID");
+                                    Console.WriteLine($"ERROR_4 {ln} INVALID {f}");
                                 }
                                 lo.Add(fixedLn);
                                 donePos = i;
