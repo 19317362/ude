@@ -20,13 +20,7 @@ namespace utf8util
         EI_ASCII,
         EI_MAX
     }
-    public enum InputState
-    {
-
-        NA,
-        ASCII,
-        MBCS
-    };
+    
 
     public static class ByteExt
     {
@@ -74,14 +68,12 @@ namespace utf8util
             var cspMBCS = new Ude.Core.MBCSGroupProber();
 
 
-            EncodingIndex theIdx = EncodingIndex.EI_ASCII;
 
             var sb = new StringBuilder();
             int usedLen = 0;
             string theSlice;
             var theSlices = new List<string>();//记录下每个分片
             int i;
-            InputState inputState = InputState.NA;
 
             EncodingIndex bomIdx = EncodingIndex.EI_GBK;
             i = (buf.Length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) ? 3 : 0;
@@ -108,38 +100,107 @@ namespace utf8util
                 bomIdx = EncodingIndex.EI_UTF8;
 
             }
+            bomIdx = EncodingIndex.EI_MAX;
             //按状态机来做
-            InputState newState = InputState.NA;
-            Ude.Core.ProbingState curProbSt = Ude.Core.ProbingState.Detecting;
+            int remain ;
+            int validLen = 0 ;
+            bool valid ;
+
             for (; i < buf.Length;)
             {
-                int remain = buf.Length - i;
-                int validLen = 0;
-                var valid = IsValidUtf8(buf, i, remain, ref validLen);
-
-                Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} new:{validLen}");
-                if (valid)
+                remain = buf.Length - i;
+                
+                if(bomIdx == EncodingIndex.EI_MAX)
                 {
-                    i += validLen;
+                    valid = IsValidUtf8(buf, i, remain, ref validLen);
+
+                    Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                    if (valid)
+                    {
+                        i += validLen;
+                        bomIdx = EncodingIndex.EI_UTF8;
+                    }
+                    else
+                    {
+                        valid = IsValidGb18030(buf, i, remain, ref validLen);
+                        Debug.WriteLine($"GB18030 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        if (valid)
+                        {
+                            i += validLen;
+                            bomIdx = EncodingIndex.EI_GBK;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Error SKIP @{i} {buf[i]:X2}");
+                            ++i;
+                        }
+                        
+                    }
+
                 }
                 else
                 {
+                    if(bomIdx == EncodingIndex.EI_UTF8)
+                    {
+                        valid = IsValidUtf8(buf, i, remain, ref validLen);
 
-                    ++i;
+                        Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        if (valid)
+                        {//继续
+                            i += validLen;
+                        }
+                        else
+                        {//要结束
+                            //收集片段
+                            theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                            theSlices.Add(theSlice);//增加进去
+                            sb.Append(theSlice);
+                            usedLen =i;
+                            //新片段
+                            bomIdx = EncodingIndex.EI_MAX;
+                        }
+                    }
+                    else if (bomIdx == EncodingIndex.EI_GBK)
+                    {
+                        valid = IsValidGb18030(buf, i, remain, ref validLen);
+
+                        Debug.WriteLine($"GB18030 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        if (valid)
+                        {//继续
+                            i += validLen;
+                        }
+                        else
+                        {//要结束
+                            //收集片段
+                            theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                            theSlices.Add(theSlice);//增加进去
+                            sb.Append(theSlice);
+                            usedLen = i;
+                            //新片段
+                            bomIdx = EncodingIndex.EI_MAX;
+                        }
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
                 }
 
-                // other than 0xa0, if every other character is ascii, the page is ascii
+
 
 
 
             }
+            if (bomIdx != EncodingIndex.EI_MAX
+                && i > usedLen
+                )//处理最后一批
+            {
+                theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                theSlices.Add(theSlice);//增加进去
+                sb.Append(theSlice);
 
-            //             if (i > usedLen)//处理最后一批
-            //             {
-            //                 theSlice = ecs[(int)theIdx].GetString(buf, usedLen, i - usedLen);
-            //                 theSlices.Add(theSlice);//增加进去
-            //                 sb.Append(theSlice);
-            //             }
+            }
+
             return sb.ToString();
         }
 
