@@ -59,15 +59,19 @@ namespace fixerr
                             {
 
                                 ++ln;
-                                //if (ln == 330)
+                                if (ln == 330)
                                 {
                                     Console.WriteLine($"{ln}");
                                 }
 
-                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos);//.TrimEnd();
-                                //
-
-                                lo.Add(fixedLen);
+                                var fixedLn = fix.FixBuffer(oo,donePos,i - donePos);//.TrimEnd();
+                                                                                     //
+                                var dataK = Encoding.UTF8.GetBytes(fixedLn);
+                                if(fix.HasInvalidChar(dataK))
+                                {
+                                    Console.WriteLine($"{ln} INVALID");
+                                }
+                                lo.Add(fixedLn);
                                 donePos = i;
 
                             }
