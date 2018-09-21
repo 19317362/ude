@@ -150,9 +150,9 @@ namespace utf8util
         /// <param name="buffer"></param>
         /// <param name="position"></param>
         /// <param name="length"></param>
-        /// <param name="bytes"></param>
+        /// <param name="cnByte"></param>
         /// <returns></returns>
-        public static bool IsValidUtf8(byte[] buffer, int position, int length, ref int bytes)
+        public static bool IsValidUtf8(byte[] buffer, int position, int length, ref int cnByte)
         {
             if (position + length > buffer.Length)
             {
@@ -161,7 +161,7 @@ namespace utf8util
 
             if (length < 1)
             {
-                bytes = 0;
+                cnByte = 0;
                 return false;
             }
 
@@ -169,7 +169,7 @@ namespace utf8util
 
             if (ch <= 0x7F)
             {
-                bytes = 1;
+                cnByte = 1;
                 return true;
             }
 
@@ -177,15 +177,15 @@ namespace utf8util
             {
                 if (length<2)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
                 if (buffer[position + 1] < 0x80 || buffer[position + 1] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
-                bytes = 2;
+                cnByte = 2;
                 return true;
             }
 
@@ -193,17 +193,17 @@ namespace utf8util
             {
                 if (length < 3)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
                 if (buffer[position + 1] < 0xa0 || buffer[position + 1] > 0xbf ||
                     buffer[position + 2] < 0x80 || buffer[position + 2] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
-                bytes = 3;
+                cnByte = 3;
                 return true;
             }
 
@@ -212,18 +212,18 @@ namespace utf8util
             {
                 if ( length < 3)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
                 if (buffer[position + 1] < 0x80 || buffer[position + 1] > 0xbf ||
                     buffer[position + 2] < 0x80 || buffer[position + 2] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
-                bytes = 3;
+                cnByte = 3;
                 return true;
             }
 
@@ -231,7 +231,7 @@ namespace utf8util
             {
                 if (length < 4)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
@@ -239,11 +239,11 @@ namespace utf8util
                     buffer[position + 2] < 0x80 || buffer[position + 2] > 0xbf ||
                     buffer[position + 3] < 0x80 || buffer[position + 3] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
-                bytes = 4;
+                cnByte = 4;
                 return true;
             }
 
@@ -251,7 +251,7 @@ namespace utf8util
             {
                 if ( length < 4)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
@@ -259,11 +259,11 @@ namespace utf8util
                     buffer[position + 2] < 0x80 || buffer[position + 2] > 0xbf ||
                     buffer[position + 3] < 0x80 || buffer[position + 3] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
-                bytes = 4;
+                cnByte = 4;
                 return true;
             }
 
@@ -271,7 +271,7 @@ namespace utf8util
             {
                 if ( length < 4)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
@@ -279,11 +279,11 @@ namespace utf8util
                     buffer[position + 2] < 0x80 || buffer[position + 2] > 0xbf ||
                     buffer[position + 3] < 0x80 || buffer[position + 3] > 0xbf)
                 {
-                    bytes = 0;
+                    cnByte = 0;
                     return false;
                 }
 
-                bytes = 4;
+                cnByte = 4;
                 return true;
             }
 
@@ -298,12 +298,12 @@ namespace utf8util
         /// <param name="buffer"></param>
         /// <param name="position"></param>
         /// <param name="length"></param>
-        /// <param name="bytes"></param>
+        /// <param name="cnByte"></param>
         /// <returns></returns>
-        public static bool IsValidGbk(byte[] buffer, int position, int length, ref int bytes)
+        public static bool IsValidGbk(byte[] buffer, int position, int length, ref int cnByte)
         {
             bool valid = false;
-            bytes = 0;
+            cnByte = 0;
 
             if (position + length > buffer.Length || length<1)
             {
@@ -316,7 +316,7 @@ namespace utf8util
                     valid = (buffer[0] & 0x80) == 0;
                     if (valid)
                     {
-                        bytes = 1;
+                        cnByte = 1;
                     }
                 }
                 else // length >=2
@@ -333,7 +333,7 @@ namespace utf8util
                         )
                     {
                         valid = true;
-                        bytes = 2;
+                        cnByte = 2;
 
                     }
                 }
@@ -344,5 +344,48 @@ namespace utf8util
             return valid;
         }
 
+        public static bool IsValidGb18030(byte[] buffer, int position, int length, ref int cnByte)
+        {
+            bool valid = false;
+            cnByte = 0;
+
+            if (position + length > buffer.Length || length < 1)
+            {
+
+            }
+            else
+            {
+                if (length == 1)
+                {
+                    valid = (buffer[0] & 0x80) == 0;
+                    if (valid)
+                    {
+                        cnByte = 1;
+                    }
+                }
+                else // length >=2
+                {
+                    byte ch0 = buffer[position];
+                    byte ch1 = buffer[position + 1];
+
+                    if (((ch0 >= 0xA1 && ch0 <= 0xA9) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/1
+                        || ((ch0 >= 0xB0 && ch0 <= 0xF7) && (ch1 >= 0xA1 && ch1 <= 0xFE)) // BGK/2
+                        || ((ch0 >= 0x81 && ch0 <= 0xA0) && (ch1 >= 0x40 && ch1 <= 0xFE && ch1 != 0x7F)) // BGK/3
+                        || ((ch0 >= 0xAA && ch0 <= 0xFE) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/4
+                        || ((ch0 >= 0xA8 && ch0 <= 0xA9) && (ch1 >= 0x40 && ch1 <= 0xA0 && ch1 != 0x7F)) // BGK/5
+                                                                                                         //|| ((ch0 >= 0xAA && ch0 <= 0xAF) && (ch1 >= 0xA1 && ch1 <= 0xF && ch1 != 0x7F)) // BGK/4
+                        )
+                    {
+                        valid = true;
+                        cnByte = 2;
+
+                    }
+                }
+
+            }
+
+
+            return valid;
+        }
     }
 }
