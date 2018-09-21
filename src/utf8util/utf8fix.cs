@@ -301,17 +301,14 @@ namespace utf8util
             }
             else
             {
-                if (length == 1)
+                byte ch0 = buffer[position];
+                if ((ch0 & 0x80) ==0)
                 {
-                    valid = (buffer[0] & 0x80) == 0;
-                    if (valid)
-                    {
-                        cnByte = 1;
-                    }
+                    valid = true;
+                    cnByte = 1;
                 }
                 else // >=2
                 {
-                    byte ch0 = buffer[position];
                     int byCnt =0;
                     if ((ch0 & 0xe0) == 0xc0)//2 byte
                     {
