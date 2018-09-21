@@ -50,7 +50,7 @@ namespace fixerr
                         Console.WriteLine($"ERROR_1 UCS2 {haveUcs2} {f}");
                         continue;
                     }
-                    EncodingIndex bomIdx = EncodingIndex.EI_MAX;
+                    EncodingIndex bomIdx = EncodingIndex.EI_UTF8;
                     i = (oo.Length >= 3 && oo[0] == 0xEF && oo[0 + 1] == 0xBB && oo[0 + 2] == 0xBF) ? 3 : 0;
                     if (i == 0)
                     {
@@ -102,7 +102,7 @@ namespace fixerr
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
                                 if(fix.HasInvalidChar(dataK))
                                 {
-                                    Console.WriteLine($"ERROR_4 {ln} {bomIdx} INVALID {f}");
+                                    
                                     EncodingIndex alterDcs;
                                     if(bomIdx == EncodingIndex.EI_UTF8)
                                     {
@@ -116,7 +116,11 @@ namespace fixerr
                                     dataK = Encoding.UTF8.GetBytes(fixedLn);
                                     if (fix.HasInvalidChar(dataK))
                                     {
-                                        Console.WriteLine($"ERROR_5 {ln} {bomIdx} INVALID {f}");
+                                        Console.WriteLine($"ERROR_5 {ln} {alterDcs} INVALID {f}");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"WARNING_1 {ln} {bomIdx} INVALID  {alterDcs} OK {f}");
                                     }
                                 }
                                 lo.Add(fixedLn);
