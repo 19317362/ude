@@ -29,7 +29,9 @@ namespace fixerr
                 Console.WriteLine($"Total Files: {ff.Length}");
                 var fix = new utf8util.utf8fix();
                 int ln =0;
-                var gbkEcs = Encoding.GetEncoding("GBK"));
+                int donePos=0;
+                int i;
+                var gbkEcs = Encoding.GetEncoding("GBK");
                 foreach (var f in ff)
                 {
                     //UTF8的部分 这个可以修回来
@@ -38,22 +40,34 @@ namespace fixerr
                     //这个纠 UTF8的
                     var lo = new List<string>();
                     ln =0;
-                    var oo = System.IO.File.ReadAllLines(f);//, Encoding.GetEncoding("GBK"));
+                    var oo = System.IO.File.ReadAllBytes(f);//, Encoding.GetEncoding("GBK"));
+                   
                     //按行来做处理
-                    foreach(var line in oo)
+                    //foreach(var line in oo)
+                    for(i=0,donePos =0; i< oo.Length;++i )
                     {
-                        var utf8 = Encoding.UTF8.GetBytes(line);
-                        var gbk = gbkEcs.GetBytes(line);
-                        ++ln;
-                        if(ln == 330)
-                        {
-                            Console.WriteLine($"{ln}");
+                        if(oo[i] == 0x0a)
+                        {//新的一行到了
+                            if(i> donePos)
+                            {
+
+                                ++ln;
+                                if (ln == 330)
+                                {
+                                    Console.WriteLine($"{ln}");
+                                }
+
+                                var fixedLen = fix.FixBuffer(oo,donePos,i - donePos);
+                                //
+
+                                lo.Add(fixedLen);
+                                donePos = i;
+
+                            }
                         }
 
-                        var fixedLen = fix.FixBuffer(utf8);
-                        //
-                        
-                        lo.Add(fixedLen);
+                        //var utf8 = Encoding.UTF8.GetBytes(line);
+                        //var gbk = gbkEcs.GetBytes(line);
                     }
                     System.IO.File.WriteAllLines(f, lo, Encoding.UTF8);
                 }

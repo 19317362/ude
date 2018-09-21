@@ -53,7 +53,7 @@ namespace utf8util
         /// </summary>
         /// <param name="buf"></param>
         /// <returns></returns>
-        public string FixBuffer(byte[] buf)
+        public string FixBuffer(byte[] dataBuf,int offset =0,int len =0)
         {//分片处理
             var ecs = new Encoding[(int)EncodingIndex.EI_MAX]{
 
@@ -63,6 +63,10 @@ namespace utf8util
                 Encoding.UTF8,
                 Encoding.ASCII
                 };
+            if(len ==0)
+            {
+                len = dataBuf.Length - offset;
+            }
             int[] maxLen = new int[(int)EncodingIndex.EI_MAX] { 2, 2, 2, 3, 1 };//最大长度。 中文最大3个字节
 
             var cspMBCS = new Ude.Core.MBCSGroupProber();
@@ -76,17 +80,18 @@ namespace utf8util
             int i;
 
             EncodingIndex bomIdx = EncodingIndex.EI_GBK;
-            i = (buf.Length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) ? 3 : 0;
+            
+            i = (len >= 3 && dataBuf[offset] == 0xEF && dataBuf[offset+1] == 0xBB && dataBuf[offset + 2] == 0xBF) ? 3 : 0;
             if (i == 0)
             {
-                if (buf.Length >= 2)
+                if (len >= 2)
                 {
-                    if (buf[0] == 0xFF && buf[1] == 0xFE)//UCS2-LE
+                    if (dataBuf[offset + 0] == 0xFF && dataBuf[offset + 1] == 0xFE)//UCS2-LE
                     {//应该主要是这种方式
                         bomIdx = EncodingIndex.EI_UCS2_LE;
                         i = 2;
                     }
-                    else if (buf[0] == 0xFE && buf[1] == 0xFF)//UCS2-BE
+                    else if (dataBuf[offset + 0] == 0xFE && dataBuf[offset + 1] == 0xFF)//UCS2-BE
                     {
                         bomIdx = EncodingIndex.EI_UCS2_BE;
                         i = 2;
@@ -106,16 +111,16 @@ namespace utf8util
             int validLen = 0 ;
             bool valid ;
 
-            for (; i < buf.Length;)
+            for (; i < len;)
             {
-                remain = buf.Length - i;
+                remain = len - i;
                 
                 
                 if(bomIdx == EncodingIndex.EI_MAX)
                 {
-                    valid = IsValidUtf8(buf, i, remain, ref validLen);
+                    valid = IsValidUtf8(dataBuf ,offset + i, remain, ref validLen);
 
-                    Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                    //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                     if (valid)
                     {
                         i += validLen;
@@ -123,8 +128,8 @@ namespace utf8util
                     }
                     else
                     {
-                        valid = IsValidGb18030(buf, i, remain, ref validLen);
-                        Debug.WriteLine($"GB18030 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        valid = IsValidGb18030(dataBuf,offset + i, remain, ref validLen);
+                        Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {
                             i += validLen;
@@ -132,7 +137,7 @@ namespace utf8util
                         }
                         else
                         {
-                            Console.WriteLine($"Error SKIP @{i} {buf[i]:X2}");
+                            Console.WriteLine($"Error SKIP @{i} {dataBuf[offset + i]:X2}");
                             ++i;
                         }
                         
@@ -143,9 +148,9 @@ namespace utf8util
                 {
                     if(bomIdx == EncodingIndex.EI_UTF8)
                     {
-                        valid = IsValidUtf8(buf, i, remain, ref validLen);
+                        valid = IsValidUtf8(dataBuf,offset + i, remain, ref validLen);
 
-                        Debug.WriteLine($"UTF8 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {//继续
                             i += validLen;
@@ -153,7 +158,7 @@ namespace utf8util
                         else
                         {//要结束
                             //收集片段
-                            theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                            theSlice = ecs[(int)bomIdx].GetString(dataBuf,offset + usedLen, i - usedLen);
                             theSlices.Add(theSlice);//增加进去
                             sb.Append(theSlice);
                             usedLen =i;
@@ -163,9 +168,9 @@ namespace utf8util
                     }
                     else if (bomIdx == EncodingIndex.EI_GBK)
                     {
-                        valid = IsValidGb18030(buf, i, remain, ref validLen);
+                        valid = IsValidGb18030(dataBuf,offset + i, remain, ref validLen);
 
-                        Debug.WriteLine($"GB18030 {i} {buf[i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {//继续
                             i += validLen;
@@ -173,7 +178,7 @@ namespace utf8util
                         else
                         {//要结束
                             //收集片段
-                            theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                            theSlice = ecs[(int)bomIdx].GetString(dataBuf,offset + usedLen, i - usedLen);
                             theSlices.Add(theSlice);//增加进去
                             sb.Append(theSlice);
                             usedLen = i;
@@ -196,7 +201,7 @@ namespace utf8util
                 && i > usedLen
                 )//处理最后一批
             {
-                theSlice = ecs[(int)bomIdx].GetString(buf, usedLen, i - usedLen);
+                theSlice = ecs[(int)bomIdx].GetString(dataBuf,offset + usedLen, i - usedLen);
                 theSlices.Add(theSlice);//增加进去
                 sb.Append(theSlice);
 
