@@ -72,7 +72,7 @@ namespace utf8util
         /// </summary>
         /// <param name="buf"></param>
         /// <returns></returns>
-        public string FixBuffer(byte[] dataBuf,int offset =0,int len =0)
+        public string FixBuffer(byte[] dataBuf,EncodingIndex fisrtECS = EncodingIndex.EI_UTF8,int offset =0,int len =0)
         {//分片处理
             var ecs = new Encoding[(int)EncodingIndex.EI_MAX]{
 
@@ -125,22 +125,46 @@ namespace utf8util
                 
                 if(bomIdx == EncodingIndex.EI_MAX)
                 {
-                    valid = IsValidGb18030(dataBuf, offset + i, remain, ref validLen);
-                    //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
-                    if (valid)
+                    if(fisrtECS == EncodingIndex.EI_UTF8)
                     {
-                        i += validLen;
-                        bomIdx = EncodingIndex.EI_GBK;
+                        valid = IsValidUtf8(dataBuf, offset + i, remain, ref validLen);
+                        //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        
                     }
                     else
                     {
-                        valid = IsValidUtf8(dataBuf, offset + i, remain, ref validLen);
-
+                        valid = IsValidGb18030(dataBuf, offset + i, remain, ref validLen);
+                        //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                    }
+                    if (valid)
+                    {
+                        i += validLen;
+                        bomIdx = fisrtECS;
+                    }
+                    else
+                    {
+                        if (fisrtECS == EncodingIndex.EI_UTF8)
+                        {
+                            valid = IsValidGb18030(dataBuf, offset + i, remain, ref validLen);
+                            //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                            if(valid)
+                            {
+                                bomIdx = EncodingIndex.EI_GBK;
+                            }
+                        }
+                        else
+                        {
+                            valid = IsValidUtf8(dataBuf, offset + i, remain, ref validLen);
+                            //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                            if (valid)
+                            {
+                                bomIdx = EncodingIndex.EI_UTF8;
+                            }
+                        }
                         //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {
                             i += validLen;
-                            bomIdx = EncodingIndex.EI_UTF8;
                         }
                         else
                         {

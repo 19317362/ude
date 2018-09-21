@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using utf8util;
 
 namespace utf8util_test
 {
@@ -17,10 +18,10 @@ namespace utf8util_test
             var fix = new utf8util.utf8fix();
 
             var utf8 = Encoding.UTF8.GetBytes(txt);
-            var theFixed = fix.FixBuffer(utf8);
+            var theFixed = fix.FixBuffer(utf8,EncodingIndex.EI_UTF8);
             Assert.AreEqual(theFixed, txt);
             var gbk = Encoding.GetEncoding("GBK").GetBytes(txt);
-            theFixed = fix.FixBuffer(gbk);
+            theFixed = fix.FixBuffer(gbk,EncodingIndex.EI_GBK);
             Assert.AreEqual(theFixed, txt);
 
             //var ucs2 = Encoding.Unicode.GetBytes(txt);
@@ -28,39 +29,39 @@ namespace utf8util_test
             //Assert.AreEqual(theFixed,txt);
 
             //组合混合串 顺序1
-            var mixedBuf = new byte[utf8.Length + gbk.Length + utf8.Length];
-            var theMixedStr = txt + txt + txt;
-            int iOffset = 0;
-
-            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
-            iOffset += utf8.Length;
-
-            Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
-            iOffset += gbk.Length;
-
-            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
-            iOffset += utf8.Length;
-
-            theFixed = fix.FixBuffer(mixedBuf);
-            Assert.AreEqual(theFixed, theMixedStr);
-
-            //顺序2
-            mixedBuf = new byte[gbk.Length + gbk.Length + utf8.Length];
-            iOffset = 0;
-
-            Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
-            iOffset += gbk.Length;
-
-            Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
-            iOffset += utf8.Length;
-
-            Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
-            iOffset += gbk.Length;
-
-
-            theFixed = fix.FixBuffer(mixedBuf);
-            Assert.AreEqual(theFixed, theMixedStr);
-
+//             var mixedBuf = new byte[utf8.Length + gbk.Length + utf8.Length];
+//             var theMixedStr = txt + txt + txt;
+//             int iOffset = 0;
+// 
+//             Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
+//             iOffset += utf8.Length;
+// 
+//             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
+//             iOffset += gbk.Length;
+// 
+//             Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
+//             iOffset += utf8.Length;
+// 
+//             theFixed = fix.FixBuffer(mixedBuf);
+//             Assert.AreEqual(theFixed, theMixedStr);
+// 
+//             //顺序2
+//             mixedBuf = new byte[gbk.Length + gbk.Length + utf8.Length];
+//             iOffset = 0;
+// 
+//             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
+//             iOffset += gbk.Length;
+// 
+//             Buffer.BlockCopy(utf8, 0, mixedBuf, iOffset, utf8.Length);
+//             iOffset += utf8.Length;
+// 
+//             Buffer.BlockCopy(gbk, 0, mixedBuf, iOffset, gbk.Length);
+//             iOffset += gbk.Length;
+// 
+// 
+//             theFixed = fix.FixBuffer(mixedBuf);
+//             Assert.AreEqual(theFixed, theMixedStr);
+// 
 
         }
         /// <summary>
@@ -110,7 +111,7 @@ UCS2:
                  */
             };
 
-            text = fix.FixBuffer(data2);
+            text = fix.FixBuffer(data2,EncodingIndex.EI_GBK);
             var dataK = Encoding.UTF8.GetBytes(text);
             Assert.IsFalse(fix.HasInvalidChar(dataK));
             //if(dataK.)

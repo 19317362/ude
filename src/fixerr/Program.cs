@@ -97,7 +97,7 @@ namespace fixerr
                                     Console.WriteLine($"{ln}");
                                 }
 
-                                var fixedLn = fix.FixBuffer(oo,donePos,i - donePos);//.TrimEnd();
+                                var fixedLn = fix.FixBuffer(oo,EncodingIndex.EI_UTF8,donePos,i - donePos);//.TrimEnd();
                                                                                      //
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
                                 if(fix.HasInvalidChar(dataK))
