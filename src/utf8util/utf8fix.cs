@@ -57,8 +57,8 @@ namespace utf8util
             for(i=0;i<buf.Length -3;++i)
             {
                 if(buf[i]== 0xEF
-                    &&buf[i]== 0xBF
-                    &&buf[i]== 0xBD
+                    &&buf[i+1]== 0xBF
+                    &&buf[i+2]== 0xBD
                     )
                 {
                     ret = true;
@@ -150,30 +150,30 @@ namespace utf8util
                 
                 if(bomIdx == EncodingIndex.EI_MAX)
                 {
-                    valid = IsValidUtf8(dataBuf ,offset + i, remain, ref validLen);
-
-                    //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                    valid = IsValidGb18030(dataBuf, offset + i, remain, ref validLen);
+                    //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                     if (valid)
                     {
                         i += validLen;
-                        bomIdx = EncodingIndex.EI_UTF8;
+                        bomIdx = EncodingIndex.EI_GBK;
                     }
                     else
                     {
-                        valid = IsValidGb18030(dataBuf,offset + i, remain, ref validLen);
-                        //Debug.WriteLine($"GB18030 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
+                        valid = IsValidUtf8(dataBuf, offset + i, remain, ref validLen);
+
+                        //Debug.WriteLine($"UTF8 {i} {dataBuf[offset + i]:X2} valid:{valid} remain:{remain} len:{validLen}");
                         if (valid)
                         {
                             i += validLen;
-                            bomIdx = EncodingIndex.EI_GBK;
+                            bomIdx = EncodingIndex.EI_UTF8;
                         }
                         else
                         {
                             Console.WriteLine($"Error SKIP @{i} {dataBuf[offset + i]:X2}");
                             ++i;
                         }
-                        
                     }
+
 
                 }
                 else
@@ -520,15 +520,12 @@ namespace utf8util
             }
             else
             {
-                if (length == 1)
+                if ((buffer[0] & 0x80) == 0)
                 {
-                    valid = (buffer[0] & 0x80) == 0;
-                    if (valid)
-                    {
-                        cnByte = 1;
-                    }
+                    valid = true;
+                    cnByte = 1;
                 }
-                else // length >=2
+                else if(length>1)
                 {
                     byte ch0 = buffer[position];
                     byte ch1 = buffer[position + 1];
