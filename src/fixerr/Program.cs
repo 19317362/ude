@@ -78,7 +78,15 @@ namespace fixerr
                     else
                     {//已经是UTF8-BOM
                         bomIdx = EncodingIndex.EI_UTF8;
-
+                        if(fix.HasInvalidChar(oo))
+                        {
+                            Console.WriteLine($"ERROR_2 UTF8-BOM INVALID {f}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"OK UTF8-BOM VALID {f}");
+                            continue;
+                        }
                     }
                     
 
