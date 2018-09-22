@@ -65,15 +65,12 @@ namespace utf8util_test
 // 
 
         }
-        /// <summary>
-        /// 测试混合数据的修正
-        /// </summary>
         [TestMethod]
         public void FixMixedText()
         {
             var mixedData = new byte[]{
-    0x2F, 0x2F, 0x70, 0x72, 0x69, 0x6E, 0x74, 0x66, 0x28, 0x22, 
-    
+    0x2F, 0x2F, 0x70, 0x72, 0x69, 0x6E, 0x74, 0x66, 0x28, 0x22,
+
     0x31, 0x3A, 0x20, 0xD5,0xFD, 0xD4, 0xDA, 0xBD, 0xE2, 0xCE, 0xF6, 0xCF, 0xC2, 0xD4, 0xD8, 0xB5, 0xD8, 0xD6, 0xB7, 0x2E,0x2E, 0x2E, 
 /*
 UTF8:
@@ -112,7 +109,7 @@ UCS2:
                  */
             };
 
-            text = fix.FixBuffer(data2,EncodingIndex.EI_UTF8);
+            text = fix.FixBuffer(data2, EncodingIndex.EI_UTF8);
             var textFromGbk = fix.FixBuffer(data2, EncodingIndex.EI_GBK);
 
             var dataK = Encoding.UTF8.GetBytes(text);
@@ -121,11 +118,11 @@ UCS2:
             //if(dataK.)
             //Assert.AreEqual(text, "//连接远程主机");
 
-            data2 = new byte[]{0xD4, 0xB6, 0xB3, 0xCC, 0xD6, 0xF7, 0xBB, 0xFA, };
+            data2 = new byte[] { 0xD4, 0xB6, 0xB3, 0xCC, 0xD6, 0xF7, 0xBB, 0xFA, };
             text = fix.FixBuffer(data2, EncodingIndex.EI_UTF8);
-            textFromGbk =fix.FixBuffer(data2, EncodingIndex.EI_GBK);
+            textFromGbk = fix.FixBuffer(data2, EncodingIndex.EI_GBK);
             dataK = Encoding.UTF8.GetBytes(text);
-            var dataGbk =Encoding.UTF8.GetBytes(textFromGbk);
+            var dataGbk = Encoding.UTF8.GetBytes(textFromGbk);
             Debug.WriteLine("UTF8:" + BitConverter.ToString(dataK));
             Debug.WriteLine("GBK:" + BitConverter.ToString(dataGbk));
             Debug.WriteLine("GBK:" + BitConverter.ToString(dataGbk));
@@ -134,6 +131,36 @@ UCS2:
             //Assert.AreEqual(text, "远程主机");
 
         }
+
+        /// <summary>
+        /// 测试混合数据的修正
+        /// </summary>
+        [TestMethod]
+        public void FixReplace()
+        {
+            var mixedData = new byte[]{
+    0x0A, 0x2F, 0x2F, 0xD6, 0xA7, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF,
+    0xBD, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0x67, 0x70, 0x69, 0x6F, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF,
+    0xBD, 0xCA, 0xBC, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0xEF, 0xBF, 0xBD, 0x28,
+    0x65, 0x65, 0x70, 0x29, 0x0D, 0x0A,
+
+            };
+
+            var fix = new utf8util.utf8fix();
+
+            Assert.IsTrue(fix.HasInvalidChar(mixedData));
+
+            fix.ReplaceInvalidChar(mixedData);
+            Assert.IsFalse(fix.HasInvalidChar(mixedData));
+
+
+            var text = fix.FixBuffer(mixedData, EncodingIndex.EI_UTF8);
+            var data = Encoding.UTF8.GetBytes(text);
+
+            Assert.IsFalse(fix.HasInvalidChar(data));
+        }
+
+
 
     }
 }

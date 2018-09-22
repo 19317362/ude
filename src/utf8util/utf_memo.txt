@@ -1,17 +1,45 @@
-﻿0 31 valid:True remain:17 new:1
-1 32 valid:True remain:16 new:1
-2 33 valid:True remain:15 new:1
-3 E5 valid:True remain:14 new:3
-4 BC valid:False remain:13 new:0
-5 A0 valid:False remain:12 new:0
-6 E4 valid:True remain:11 new:3
-7 B8 valid:False remain:10 new:0
-8 89 valid:False remain:9 new:0
-9 62 valid:True remain:8 new:0
-10 E6 valid:True remain:7 new:0
-11 9D valid:True remain:6 new:0
-12 8E valid:True remain:5 new:0
-13 E5 valid:True remain:4 new:0
-14 9B valid:True remain:3 new:0
-15 9B valid:True remain:2 new:0
-16 61 valid:True remain:1 new:0
+﻿//----------
+1. 非 UTF8 的禁止提交
+2. UTF8 中有错误字节的  禁止提交
+Total Files: 3276
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\transfer\mmst_session_base.cpp
+
+ERROR_2 UTF8-BOM INVALID d:\Work2019\KFV\dxr_v5_test\transfer\mmst_session_base.cpp
+35556,35559
+
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\x_dvrr\dxr_switch.h
+
+ERROR_2 UTF8-BOM INVALID d:\Work2019\KFV\dxr_v5_test\x_dvrr\dxr_switch.h
+32629,32632,32635,32638,32641,32644,32651,32654,32659,32662,32665,32668
+
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\x_dvrr\wfcvm\wfs\mmst_session_base.cpp
+
+ERROR_2 UTF8-BOM INVALID d:\Work2019\KFV\dxr_v5_test\x_dvrr\wfcvm\wfs\mmst_session_base.cpp
+35557,35560
+
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\x_mdk_core\api_lib.cpp
+
+ERROR_2 UTF8-BOM INVALID d:\Work2019\KFV\dxr_v5_test\x_mdk_core\api_lib.cpp
+108644,108653,108656,108689,108692,108701,108704,108707,108710,108722,108725,108740,108743,108750,108753
+
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\xplatform\x_asio_gpio.cpp
+
+Line:280 OFFSET:26A2
+ORG:0A-47-70-69-6F-4C-65-76-65-6C-54-79-70-65-20-78-5F-61-73-69-6F-5F-67-70-69-6F-3A-3A-47-70-69-6F-47-65-74-28-75-33-32-20-67-70-69-6F-4E-62-29-2F-2F-EF-BF-BD-EF-BF-BD-EF-BF-BD-EF-BF-BD-C7-B0-D7-B4-CC-AC
+AFT:47-70-69-6F-4C-65-76-65-6C-54-79-70-65-20-78-5F-61-73-69-6F-5F-67-70-69-6F-3A-3A-47-70-69-6F-47-65-74-28-75-33-32-20-67-70-69-6F-4E-62-29-2F-2F-EF-BF-BD-EF-BF-BD-EF-BF-BD-EF-BF-BD-E5-89-8D-E7-8A-B6-E6-80-81
+AFT2:47-70-69-6F-4C-65-76-65-6C-54-79-70-65-20-78-5F-61-73-69-6F-5F-67-70-69-6F-3A-3A-47-70-69-6F-47-65-74-28-75-33-32-20-67-70-69-6F-4E-62-29-2F-2F-E9-94-9F-E6-96-A4-E6-8B-B7-E9-94-9F-E6-96-A4-E6-8B-B7-E5-89-8D-E7-8A-B6-E6-80-81
+WARNING_1 280 EI_UTF8 INVALID  EI_GBK OK d:\Work2019\KFV\dxr_v5_test\xplatform\x_asio_gpio.cpp
+
+-----------------------------------------------------------------------
+d:\Work2019\KFV\dxr_v5_test\xplatform\x_poll_thread.cpp
+
+ERROR_2 UTF8-BOM INVALID d:\Work2019\KFV\dxr_v5_test\xplatform\x_poll_thread.cpp
+1847,1850,1853,1856,1867,1870,1875,1878,1881,1884,1888,1891,1904,1907,1912,1915,1918,1923,1926,1929,1932,1935,1938
+
+
+

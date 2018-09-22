@@ -66,6 +66,30 @@ namespace utf8util
             }
             return ret;
         }
+
+        public List<int> ReplaceInvalidChar(byte[] buf)
+        {
+            //ERR    EF BF BD
+            //BOM:EF BB BF                                        
+
+            List<int> errList = new List<int>();
+            int i;
+            for (i = 0; i < buf.Length - 3; ++i)
+            {
+                if (buf[i] == 0xEF
+                    && buf[i + 1] == 0xBF
+                    && buf[i + 2] == 0xBD
+                    )
+                {
+                    errList.Add(i);   
+                    buf[i] = 0x45;//E
+                    buf[i+1] = 0x72;//r
+                    buf[i+2] = 0x72;//r
+                    i+=2;
+                }
+            }
+            return errList;
+        }
         /// <summary>
         /// 把输入buf中的 fix成 UTF8 串
         /// </summary>

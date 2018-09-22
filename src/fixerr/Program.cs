@@ -33,12 +33,21 @@ namespace fixerr
                 int ln =0;
                 int donePos=0;
                 int i;
-                
+
+                var sbErrInfo = new StringBuilder();//用来存错误信息
+                var sbBaseInfo = new StringBuilder();//用来存基本信息 -- 有错时才打印
                 var gbkEcs = Encoding.GetEncoding("GBK");
                 foreach (var f in ff)
                 {
-                    Console.WriteLine("-----------------------------------------------------------------------");
-                    Console.WriteLine(f);
+                    if(sbErrInfo.Length>0)
+                    {
+                        Console.WriteLine(sbBaseInfo.ToString());
+                        Console.WriteLine(sbErrInfo.ToString());
+                    }
+                    sbErrInfo.Clear();
+                    sbBaseInfo.Clear();
+                    sbBaseInfo.AppendLine("-----------------------------------------------------------------------");
+                    sbBaseInfo.AppendLine(f);
                     //UTF8的部分 这个可以修回来
                     //GBK的部分，要用python
                     //或者 python 按行转为UTF8
@@ -50,7 +59,7 @@ namespace fixerr
                     var haveUcs2 = oo.Any(L => L == 0x00);
                     if(haveUcs2)
                     {
-                        Console.WriteLine($"ERROR_1 UCS2 {haveUcs2} {f}");
+                        sbErrInfo.AppendLine($"ERROR_1 UCS2 {haveUcs2} {f}");
                         continue;
                     }
                     EncodingIndex bomIdx = EncodingIndex.EI_UTF8;
@@ -64,14 +73,14 @@ namespace fixerr
                                 
                                 i = 2;
                                 bomIdx = EncodingIndex.EI_UCS2_LE;
-                                Console.WriteLine($"ERROR_2{bomIdx} {f}");
+                                sbErrInfo.AppendLine($"ERROR_2{bomIdx} {f}");
                                 continue;
                             }
                             else if (oo[0 + 0] == 0xFE && oo[0 + 1] == 0xFF)//UCS2-BE
                             {
                                 bomIdx = EncodingIndex.EI_UCS2_BE;
                                 i = 2;
-                                Console.WriteLine($"ERROR_3 {bomIdx} {f}");
+                                sbErrInfo.AppendLine($"ERROR_3 {bomIdx} {f}");
                                 continue;
                             }
 
@@ -83,7 +92,9 @@ namespace fixerr
                         bomIdx = EncodingIndex.EI_UTF8;
                         if(fix.HasInvalidChar(oo))
                         {
-                            Console.WriteLine($"ERROR_2 UTF8-BOM INVALID {f}");
+                            sbErrInfo.AppendLine($"ERROR_2 UTF8-BOM INVALID {f}");
+                            var errOffset = fix.ReplaceInvalidChar(oo);
+                            sbErrInfo.AppendLine(string.Join(",",errOffset));
                         }
                         else
                         {
@@ -95,30 +106,26 @@ namespace fixerr
 
                     //按行来做处理
                     //foreach(var line in oo)
-                    for (donePos =i; i< oo.Length;++i )
+                    for (donePos =i; i<= oo.Length ;++i )
                     {
-                        if(oo[i] == 0x0a || oo[i] == 0x0d)
+                        if(i == oo.Length //尾部没有 CRLF
+                            ||oo[i] == 0x0a || oo[i] == 0x0d //CRLF
+                            )
                         {//新的一行到了
-                            if((i-1)> donePos)
+                            if(i == oo.Length ||(i-1)> donePos)
                             {
 
                                 ++ln;
-
-                                var fixedLn = fix.FixBuffer(oo,bomIdx,donePos,i - donePos);
+                                var theLen = i == oo.Length ?(i - donePos -1) :i - donePos;
+                                var fixedLn = fix.FixBuffer(oo,bomIdx,donePos, theLen);
                                                                                      
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
-                                //if (ln == 347)
-                                //{
-                                //    Console.WriteLine($"{ln} OFFSET:{donePos:X}");
-                                //    Console.WriteLine("ORG:" + BitConverter.ToString(oo,donePos,i-donePos));
-                                //    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
-                                //}
                                 
                                 if (fix.HasInvalidChar(dataK))
                                 {
-                                    Console.WriteLine($"{ln} OFFSET:{donePos:X}");
-                                    Console.WriteLine("ORG:" + BitConverter.ToString(oo, donePos, i - donePos));
-                                    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
+                                    sbErrInfo.AppendLine($"Line:{ln} OFFSET:{donePos:X}");
+                                    sbErrInfo.AppendLine("ORG:" + BitConverter.ToString(oo, donePos, theLen));
+                                    sbErrInfo.AppendLine("AFT:" + BitConverter.ToString(dataK));
 
                                     EncodingIndex alterDcs;
                                     if(bomIdx == EncodingIndex.EI_UTF8)
@@ -129,21 +136,24 @@ namespace fixerr
                                     {
                                         alterDcs =EncodingIndex.EI_UTF8;
                                     }
-                                    fixedLn = fix.FixBuffer(oo, alterDcs, donePos, i - donePos);
+                                    fixedLn = fix.FixBuffer(oo, alterDcs, donePos, theLen);
                                     dataK = Encoding.UTF8.GetBytes(fixedLn);
-                                    Console.WriteLine("AFT2:" + BitConverter.ToString(dataK));
+                                    sbErrInfo.AppendLine("AFT2:" + BitConverter.ToString(dataK));
                                     if (fix.HasInvalidChar(dataK))
                                     {
-                                        Console.WriteLine($"ERROR_5 {ln} {alterDcs} INVALID {f}");
+                                        sbErrInfo.AppendLine($"ERROR_5 {ln} {alterDcs} INVALID {f}");
                                     }
                                     else
                                     {
-                                        Console.WriteLine($"WARNING_1 {ln} {bomIdx} INVALID  {alterDcs} OK {f}");
+                                        sbErrInfo.AppendLine($"WARNING_1 {ln} {bomIdx} INVALID  {alterDcs} OK {f}");
                                     }
                                 }
                                 lo.Add(fixedLn);
                                 donePos = i;
-
+                                if(i>= oo.Length)
+                                {
+                                    break;
+                                }
                             }
                             else
                             {
@@ -154,6 +164,7 @@ namespace fixerr
                         //var utf8 = Encoding.UTF8.GetBytes(line);
                         //var gbk = gbkEcs.GetBytes(line);
                     }
+                    
                     System.IO.File.WriteAllLines(f, lo, Encoding.UTF8);
                 }
                 Console.WriteLine("Done");
