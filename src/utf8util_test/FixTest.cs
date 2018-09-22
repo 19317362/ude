@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using utf8util;
@@ -111,11 +112,27 @@ UCS2:
                  */
             };
 
-            text = fix.FixBuffer(data2,EncodingIndex.EI_GBK);
+            text = fix.FixBuffer(data2,EncodingIndex.EI_UTF8);
+            var textFromGbk = fix.FixBuffer(data2, EncodingIndex.EI_GBK);
+
             var dataK = Encoding.UTF8.GetBytes(text);
-            Assert.IsFalse(fix.HasInvalidChar(dataK));
+
+            //Assert.IsFalse(fix.HasInvalidChar(dataK));
             //if(dataK.)
-            Assert.AreEqual(text, "//连接远程主机");
+            //Assert.AreEqual(text, "//连接远程主机");
+
+            data2 = new byte[]{0xD4, 0xB6, 0xB3, 0xCC, 0xD6, 0xF7, 0xBB, 0xFA, };
+            text = fix.FixBuffer(data2, EncodingIndex.EI_UTF8);
+            textFromGbk =fix.FixBuffer(data2, EncodingIndex.EI_GBK);
+            dataK = Encoding.UTF8.GetBytes(text);
+            var dataGbk =Encoding.UTF8.GetBytes(textFromGbk);
+            Debug.WriteLine("UTF8:" + BitConverter.ToString(dataK));
+            Debug.WriteLine("GBK:" + BitConverter.ToString(dataGbk));
+            Debug.WriteLine("GBK:" + BitConverter.ToString(dataGbk));
+            //Assert.IsFalse(fix.HasInvalidChar(dataK));
+            //if(dataK.)
+            //Assert.AreEqual(text, "远程主机");
+
         }
 
     }

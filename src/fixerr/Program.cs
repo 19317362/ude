@@ -96,16 +96,19 @@ namespace fixerr
                                 var fixedLn = fix.FixBuffer(oo,bomIdx,donePos,i - donePos);
                                                                                      
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
-                                if (ln == 347)
-                                {
-                                    Console.WriteLine($"{ln} OFFSET:{donePos}");
-                                    Console.WriteLine("ORG:" + BitConverter.ToString(oo,donePos,i-donePos));
-                                    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
-                                }
+                                //if (ln == 347)
+                                //{
+                                //    Console.WriteLine($"{ln} OFFSET:{donePos:X}");
+                                //    Console.WriteLine("ORG:" + BitConverter.ToString(oo,donePos,i-donePos));
+                                //    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
+                                //}
                                 
                                 if (fix.HasInvalidChar(dataK))
                                 {
-                                    
+                                    Console.WriteLine($"{ln} OFFSET:{donePos:X}");
+                                    Console.WriteLine("ORG:" + BitConverter.ToString(oo, donePos, i - donePos));
+                                    Console.WriteLine("AFT:" + BitConverter.ToString(dataK));
+
                                     EncodingIndex alterDcs;
                                     if(bomIdx == EncodingIndex.EI_UTF8)
                                     {

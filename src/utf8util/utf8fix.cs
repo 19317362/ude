@@ -415,7 +415,9 @@ namespace utf8util
                     int byCnt =0;
                     if ((ch0 & 0xe0) == 0xc0)//2 byte
                     {
-                        byCnt =2;
+                        //byCnt =2;
+                        //中文不存在 2 字节的 
+                        //valid = false;
 
                     }
                     else if ((ch0 & 0xF0) == 0xE0 && length>=3)//3 byte
@@ -424,15 +426,15 @@ namespace utf8util
                     }
                     else if ((ch0 & 0xF8) == 0xF0 && length >= 4)//4 byte
                     {
-                        byCnt =4;
+                        //byCnt =4;
                     }
                     else if ((ch0 & 0xFE) == 0xF8 && length >= 5)//5 byte
                     {
-                        byCnt = 5;
+                        //byCnt = 5;
                     }
                     else if ((ch0 & 0xFE) == 0xFC && length >= 6)//6 byte
                     {
-                        byCnt = 6;
+                        //byCnt = 6;
                     }
                     if(byCnt>0)
                     {//多字节
