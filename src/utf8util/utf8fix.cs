@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using Ude;
@@ -91,10 +90,6 @@ namespace utf8util
                 fisrtECS = EncodingIndex.EI_GBK;
             
             }
-            int[] maxLen = new int[(int)EncodingIndex.EI_MAX] { 2, 2, 2, 3, 1 };//最大长度。 中文最大3个字节
-
-            var cspMBCS = new Ude.Core.MBCSGroupProber();
-
 
 
             var sb = new StringBuilder();
