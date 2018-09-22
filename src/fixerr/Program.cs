@@ -27,7 +27,7 @@ namespace fixerr
                 //Console.WriteLine("GBK:\r\n{0}", BitConverter.ToString(gbk));
                 //Console.WriteLine("UCS2:\r\n{0}", BitConverter.ToString(ucs2));
                 var pat = args[1].Split(new char[]{';',',' },StringSplitOptions.RemoveEmptyEntries);
-                var ff = DirUtil.GetFiles(args[0], pat, SearchOption.AllDirectories).ToArray();
+                var ff = DirUtil.GetFiles(args[0], pat, SearchOption.AllDirectories).OrderBy(L => L).ToArray();
                 Console.WriteLine($"Total Files: {ff.Length}");
                 var fix = new utf8util.utf8fix();
                 int ln =0;
@@ -37,6 +37,8 @@ namespace fixerr
                 var gbkEcs = Encoding.GetEncoding("GBK");
                 foreach (var f in ff)
                 {
+                    Console.WriteLine("-----------------------------------------------------------------------");
+                    Console.WriteLine(f);
                     //UTF8的部分 这个可以修回来
                     //GBK的部分，要用python
                     //或者 python 按行转为UTF8
@@ -85,7 +87,7 @@ namespace fixerr
                         }
                         else
                         {
-                            Console.WriteLine($"OK UTF8-BOM VALID {f}");
+                            //Console.WriteLine($"OK UTF8-BOM VALID {f}");
                             continue;
                         }
                     }
@@ -154,6 +156,7 @@ namespace fixerr
                     }
                     System.IO.File.WriteAllLines(f, lo, Encoding.UTF8);
                 }
+                Console.WriteLine("Done");
             }
         }
     }
