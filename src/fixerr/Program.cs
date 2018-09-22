@@ -26,7 +26,8 @@ namespace fixerr
                 //Console.WriteLine("UTF8:\r\n{0}", BitConverter.ToString(utf8));
                 //Console.WriteLine("GBK:\r\n{0}", BitConverter.ToString(gbk));
                 //Console.WriteLine("UCS2:\r\n{0}", BitConverter.ToString(ucs2));
-                var ff = System.IO.Directory.EnumerateFiles(args[0], args[1], SearchOption.AllDirectories).ToArray();
+                var pat = args[1].Split(new char[]{';',',' },StringSplitOptions.RemoveEmptyEntries);
+                var ff = DirUtil.GetFiles(args[0], pat, SearchOption.AllDirectories).ToArray();
                 Console.WriteLine($"Total Files: {ff.Length}");
                 var fix = new utf8util.utf8fix();
                 int ln =0;
