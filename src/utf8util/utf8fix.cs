@@ -66,7 +66,11 @@ namespace utf8util
             }
             return ret;
         }
-
+        public void FixCRLF(byte[] buf)
+        {
+            //CRLF 或 LF 不做特殊处理
+            //CR 无 LF  CR => LF
+        }
         public List<int> ReplaceInvalidChar(byte[] buf)
         {
             //ERR    EF BF BD

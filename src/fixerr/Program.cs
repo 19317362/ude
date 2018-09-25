@@ -108,15 +108,17 @@ namespace fixerr
                     //foreach(var line in oo)
                     for (donePos =i; i<= oo.Length ;++i )
                     {
+
                         if(i == oo.Length //尾部没有 CRLF
-                            ||oo[i] == 0x0a || oo[i] == 0x0d //CRLF
+                            ||oo[i] == 0x0a //|| oo[i] == 0x0d //CRLF 0D0A 当一个来处理
+                            
                             )
                         {//新的一行到了
                             if(i == oo.Length ||(i-1)> donePos)
                             {
 
                                 ++ln;
-                                var theLen = i == oo.Length ?(i - donePos -1) :i - donePos;
+                                var theLen = i == oo.Length ?(i - donePos ) :(i - donePos);
                                 var fixedLn = fix.FixBuffer(oo,bomIdx,donePos, theLen);
                                                                                      
                                 var dataK = Encoding.UTF8.GetBytes(fixedLn);
