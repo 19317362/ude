@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "utf8util", "src\utf8util\ut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "utf8util_test", "src\utf8util_test\utf8util_test.csproj", "{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixMacro", "FixMacro\FixMacro.csproj", "{3BE3D81F-E8E5-47C1-A1A4-37E6A58F1AF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17E33736-E156-4C5A-892C-ACB8E2B0C0D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BE3D81F-E8E5-47C1-A1A4-37E6A58F1AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BE3D81F-E8E5-47C1-A1A4-37E6A58F1AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BE3D81F-E8E5-47C1-A1A4-37E6A58F1AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BE3D81F-E8E5-47C1-A1A4-37E6A58F1AF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
